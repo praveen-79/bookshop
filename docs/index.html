@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookVerse | Online Bookshop Application</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar-bookshop { background: #0f172a; }
+    .book-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: #ffffff;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    }
+    .book-cover-visual {
+      height: 200px;
+      border-radius: 12px;
+      padding: 18px;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset -6px 0 15px rgba(0, 0, 0, 0.18);
+    }
+    .book-cover-visual::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: rgba(255, 255, 255, 0.28);
+    }
+    .search-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 1050;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+      border: 1px solid #e2e8f0;
+      max-height: 350px;
+      overflow-y: auto;
+      display: none;
+    }
+    .view-pane { display: none; }
+    .view-pane.active { display: block; }
+    .toast-container-fixed { position: fixed; bottom: 24px; right: 24px; z-index: 1090; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-bookshop sticky-top py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#" onclick="showPage('catalog'); return false;">
+        <i class="bi bi-book-half text-info fs-4"></i>
+        <span>Book<span class="text-info">Verse</span></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bookshopNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="bookshopNav">
+        <div class="mx-lg-4 my-2 my-lg-0 flex-grow-1 position-relative" style="max-width: 460px;">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-secondary"><i class="bi bi-search"></i></span>
+            <input type="text" id="live-search" class="form-control border-start-0" placeholder="Search book titles, authors, or ISBN (jQuery + AJAX)..." autocomplete="off">
+          </div>
+          <div id="search-suggestions" class="search-dropdown mt-1"></div>
+        </div>
+
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('catalog'); return false;"><i class="bi bi-grid me-1"></i>Catalog</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('orders'); return false;"><i class="bi bi-receipt me-1"></i>Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('profile'); return false;"><i class="bi bi-person-circle me-1"></i><span id="nav-username">praveen</span></a></li>
+          <li class="nav-item">
+            <a class="btn btn-info text-white btn-sm px-3" href="#" onclick="showPage('cart'); return false;">
+              <i class="bi bi-cart3 me-1"></i>Cart
+              <span id="nav-cart-count" class="badge rounded-pill bg-danger ms-1">0</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-light btn-sm" href="https://github.com/praveen-79/bookshop" target="_blank"><i class="bi bi-github me-1"></i>Code</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4 flex-grow-1">
+    <div id="flash-box"></div>
+
+    <!-- PAGE 1: CATALOG -->
+    <div id="page-catalog" class="view-pane active">
+      <div class="p-4 p-md-5 mb-4 rounded-4 text-white shadow-sm" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0284c7 100%);">
+        <span class="badge bg-info text-dark fw-bold mb-2 px-3 py-1 rounded-pill">ONLINE BOOKSHOP APPLICATION</span>
+        <h1 class="display-6 fw-bold mb-2">Discover Essential Computer Science, AI &amp; Engineering Books</h1>
+        <p class="text-light opacity-75 mb-3">
+          Interactive bookstore featuring jQuery &amp; AJAX live search, real-time cart management, dummy payment checkout, profile management, and order history.
+        </p>
+        <div class="d-flex flex-wrap gap-2" id="category-pills"></div>
+      </div>
+      <div class="row g-4" id="catalog-grid"></div>
+    </div>
+
+    <!-- PAGE 2: CART -->
+    <div id="page-cart" class="view-pane">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="fw-bold mb-0"><i class="bi bi-cart3 text-primary me-2"></i>Shopping Cart</h3>
+        <button class="btn btn-outline-secondary btn-sm" onclick="showPage('catalog')"><i class="bi bi-arrow-left me-1"></i>Continue Shopping</button>
+      </div>
+      <div id="cart-container"></div>
+    </div>
+
+    <!-- PAGE 3: CHECKOUT -->
+    <div id="page-checkout" class="view-pane">
+      <h3 class="fw-bold mb-4"><i class="bi bi-credit-card-2-front text-primary me-2"></i>Checkout &amp; Dummy Payment Gateway</h3>
+      <form id="checkout-form">
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+              <h5 class="fw-bold mb-3">1. Shipping Information</h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">Recipient Full Name</label>
+                  <input type="text" id="ship-name" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">Phone Number</label>
+                  <input type="text" id="ship-phone" class="form-control" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small text-secondary">Shipping Address</label>
+                  <input type="text" id="ship-address" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">City</label>
+                  <input type="text" id="ship-city" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">PIN Code</label>
+                  <input type="text" id="ship-pin" class="form-control" required>
+                </div>
+              </div>
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+              <h5 class="fw-bold mb-3">2. Dummy Payment Processing</h5>
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Payment Method</label>
+                <select id="pay-method" class="form-select">
+                  <option value="Credit / Debit Card (Dummy Gateway)">Credit / Debit Card (Dummy Gateway)</option>
+                  <option value="UPI Instant Pay (GPay / PhonePe)">UPI Instant Pay (GPay / PhonePe)</option>
+                  <option value="NetBanking">NetBanking</option>
+                  <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+                </select>
+              </div>
+              <div class="p-3 rounded-3 bg-light border">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label small text-secondary">Simulated Card Number</label>
+                    <input type="text" class="form-control" value="4532 •••• •••• 8891" required>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small text-secondary">Expiry</label>
+                    <input type="text" class="form-control" value="08/29" required>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small text-secondary">CVV</label>
+                    <input type="password" class="form-control" value="123" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4" id="checkout-summary-box"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- PAGE 4: ORDER HISTORY -->
+    <div id="page-orders" class="view-pane">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Order History</h3>
+        <button class="btn btn-outline-primary btn-sm" onclick="showPage('catalog')">Browse More Books</button>
+      </div>
+      <div id="orders-list"></div>
+    </div>
+
+    <!-- PAGE 5: USER PROFILE MANAGEMENT -->
+    <div id="page-profile" class="view-pane">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+            <div class="mx-auto mb-3 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-2" style="width:76px;height:76px;" id="prof-avatar">P</div>
+            <h5 class="fw-bold mb-0" id="prof-disp-name"></h5>
+            <div class="text-secondary small mb-2" id="prof-disp-email"></div>
+            <p class="small text-muted" id="prof-disp-bio"></p>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h4 class="fw-bold mb-3"><i class="bi bi-person-gear text-primary me-2"></i>Manage Profile Information</h4>
+            <form id="profile-form">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">Full Name</label>
+                  <input type="text" id="prof-name" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">Email Address</label>
+                  <input type="email" id="prof-email" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">Phone Number</label>
+                  <input type="text" id="prof-phone" class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small text-secondary">City</label>
+                  <input type="text" id="prof-city" class="form-control">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small text-secondary">Shipping Address</label>
+                  <input type="text" id="prof-address" class="form-control">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small text-secondary">Bio</label>
+                  <textarea id="prof-bio" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary mt-4 px-4"><i class="bi bi-save me-1"></i>Save Profile Changes</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container-fixed">
+    <div id="cart-toast" class="toast align-items-center text-bg-dark border-0 shadow" role="alert">
+      <div class="d-flex">
+        <div class="toast-body" id="cart-toast-body">Book added to cart!</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-dark text-secondary py-4 mt-5 small">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+      <div><strong class="text-white">BookVerse Online Bookshop Application</strong> &mdash; Python, Flask, Jinja2, Bootstrap, JavaScript, jQuery, AJAX &amp; SQLite</div>
+      <div>Developed by <strong class="text-info">Pidamarthi Praveen Kumar</strong></div>
+    </div>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const BOOKS = [
+      { id: 1, title: "Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow", author: "Aurélien Géron", category: "AI & Machine Learning", isbn: "978-1098125974", price: 649, rating: 4.9, stock: 42, color: "#0284c7", desc: "Practical guide to building intelligent systems using Python, Scikit-Learn, Keras, and TensorFlow." },
+      { id: 2, title: "Deep Learning", author: "Ian Goodfellow, Yoshua Bengio", category: "AI & Machine Learning", isbn: "978-0262035613", price: 799, rating: 4.8, stock: 30, color: "#7c3aed", desc: "The definitive textbook on deep learning covering neural networks, CNNs, RNNs, and generative models." },
+      { id: 3, title: "Designing Data-Intensive Applications", author: "Martin Kleppmann", category: "Software Engineering", isbn: "978-1449373320", price: 599, rating: 4.9, stock: 35, color: "#059669", desc: "Reliable, scalable, and maintainable distributed systems, databases, and stream processing." },
+      { id: 4, title: "Clean Code: A Handbook of Agile Software Craftsmanship", author: "Robert C. Martin", category: "Software Engineering", isbn: "978-0132350884", price: 499, rating: 4.7, stock: 50, color: "#d97706", desc: "Best practices, design patterns, and principles for writing readable, maintainable object-oriented code." },
+      { id: 5, title: "Introduction to Algorithms (CLRS)", author: "Thomas H. Cormen", category: "Data Structures & Algorithms", isbn: "978-0262046305", price: 899, rating: 4.9, stock: 25, color: "#dc2626", desc: "Comprehensive guide to data structures, graph algorithms, and dynamic programming." },
+      { id: 6, title: "Flask Web Development with Python", author: "Miguel Grinberg", category: "Web Development", isbn: "978-1491991732", price: 459, rating: 4.6, stock: 38, color: "#2563eb", desc: "Step-by-step guide to building Python web applications with Flask, Jinja2, SQLite, and REST APIs." },
+      { id: 7, title: "Artificial Intelligence: A Modern Approach", author: "Stuart Russell, Peter Norvig", category: "AI & Machine Learning", isbn: "978-0134610993", price: 849, rating: 4.8, stock: 28, color: "#4f46e5", desc: "Foundational exploration of search algorithms, probabilistic reasoning, NLP, and robotics." },
+      { id: 8, title: "Eloquent JavaScript", author: "Marijn Haverbeke", category: "Web Development", isbn: "978-1593279509", price: 399, rating: 4.7, stock: 45, color: "#ea580c", desc: "Deep dive into JavaScript ES6+, DOM manipulation, AJAX, and browser application architecture." }
+    ];
+
+    let activeCategory = "";
+    let searchFilter = "";
+    let cart = [{ bookId: 1, qty: 1 }];
+    let userProfile = {
+      username: "praveen",
+      fullName: "Pidamarthi Praveen Kumar",
+      email: "praveenkumarpidamarthi01@gmail.com",
+      phone: "+91 8317668826",
+      address: "Gandipet, CBIT Campus Road",
+      city: "Hyderabad",
+      pin: "500075",
+      bio: "B.Tech AI & ML at CBIT | Building Full-Stack & Deep Learning Applications."
+    };
+    let orders = [
+      {
+        orderNumber: "ORD-2026-84920",
+        date: "2026-10-07 11:30",
+        status: "Delivered",
+        paymentMethod: "Credit Card (Dummy Gateway)",
+        paymentRef: "TXN-99481204",
+        total: 1205.40,
+        items: [
+          { title: "Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow", author: "Aurélien Géron", price: 649, qty: 1 },
+          { title: "Clean Code: A Handbook of Agile Software Craftsmanship", author: "Robert C. Martin", price: 499, qty: 1 }
+        ]
+      }
+    ];
+
+    function showToast(msg) {
+      $("#cart-toast-body").text(msg);
+      bootstrap.Toast.getOrCreateInstance(document.getElementById("cart-toast"), { delay: 2200 }).show();
+    }
+
+    function showPage(page) {
+      $(".view-pane").removeClass("active");
+      $("#page-" + page).addClass("active");
+      if (page === "cart") renderCart();
+      if (page === "checkout") renderCheckout();
+      if (page === "orders") renderOrders();
+      if (page === "profile") renderProfile();
+    }
+
+    function updateNavBadge() {
+      const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+      $("#nav-cart-count").text(totalQty);
+    }
+
+    function renderCatalog() {
+      const cats = [...new Set(BOOKS.map(b => b.category))];
+      let pillsHtml = `<button class="btn btn-sm ${!activeCategory ? 'btn-info text-white fw-semibold' : 'btn-outline-light'} rounded-pill px-3" onclick="setCategory('')">All Categories</button>`;
+      cats.forEach(c => {
+        pillsHtml += `<button class="btn btn-sm ${activeCategory === c ? 'btn-info text-white fw-semibold' : 'btn-outline-light'} rounded-pill px-3" onclick="setCategory('${c}')">${c}</button>`;
+      });
+      $("#category-pills").html(pillsHtml);
+
+      const filtered = BOOKS.filter(b => {
+        const matchCat = !activeCategory || b.category === activeCategory;
+        const q = searchFilter.toLowerCase();
+        const matchQ = !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || b.isbn.includes(q);
+        return matchCat && matchQ;
+      });
+
+      const gridHtml = filtered.map(b => `
+        <div class="col-sm-6 col-lg-4 col-xl-3">
+          <div class="book-card p-3">
+            <div class="book-cover-visual mb-3" style="background: linear-gradient(145deg, ${b.color}, #0f172a);">
+              <div class="d-flex justify-content-between align-items-start">
+                <span class="badge bg-dark bg-opacity-50 text-white" style="font-size:0.7rem;">${b.category}</span>
+                <span class="badge bg-warning text-dark fw-bold"><i class="bi bi-star-fill me-1"></i>${b.rating}</span>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-1 text-white lh-sm">${b.title}</h6>
+                <div class="small text-white-50">${b.author}</div>
+              </div>
+            </div>
+            <div class="flex-grow-1 d-flex flex-column justify-content-between">
+              <div>
+                <h6 class="fw-bold mb-1 text-truncate">${b.title}</h6>
+                <div class="text-secondary small mb-2">${b.author}</div>
+                <p class="text-muted small mb-3">${b.desc}</p>
+              </div>
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                <div>
+                  <span class="fs-5 fw-bold text-primary">&#8377;${b.price}</span>
+                  <span class="text-success d-block" style="font-size:0.72rem;"><i class="bi bi-check-circle-fill me-1"></i>In Stock (${b.stock})</span>
+                </div>
+                <button class="btn btn-primary btn-sm px-3" onclick="addToCart(${b.id})">
+                  <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join("");
+      $("#catalog-grid").html(gridHtml);
+    }
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      renderCatalog();
+    }
+
+    function addToCart(bookId) {
+      const book = BOOKS.find(b => b.id === bookId);
+      const item = cart.find(i => i.bookId === bookId);
+      if (item) item.qty++;
+      else cart.push({ bookId, qty: 1 });
+      updateNavBadge();
+      showToast(`Added "${book.title}" to cart!`);
+    }
+
+    function changeQty(bookId, delta) {
+      const item = cart.find(i => i.bookId === bookId);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) cart = cart.filter(i => i.bookId !== bookId);
+      updateNavBadge();
+      renderCart();
+    }
+
+    function renderCart() {
+      if (!cart.length) {
+        $("#cart-container").html(`
+          <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+            <i class="bi bi-cart-x display-3 text-secondary"></i>
+            <h4 class="fw-bold mt-3">Your Cart is Empty</h4>
+            <p class="text-secondary">Browse our collection and add books to get started.</p>
+            <div><button class="btn btn-primary px-4" onclick="showPage('catalog')">Explore Books</button></div>
+          </div>`);
+        return;
+      }
+
+      let subtotal = 0;
+      const rowsHtml = cart.map(ci => {
+        const b = BOOKS.find(x => x.id === ci.bookId);
+        const sub = b.price * ci.qty;
+        subtotal += sub;
+        return `
+          <tr>
+            <td class="ps-4 py-3"><div class="fw-bold">${b.title}</div><div class="text-secondary small">${b.author}</div></td>
+            <td>&#8377;${b.price.toFixed(2)}</td>
+            <td class="text-center">
+              <div class="input-group input-group-sm justify-content-center" style="width:110px;margin:0 auto;">
+                <button class="btn btn-outline-secondary" onclick="changeQty(${b.id}, -1)">&minus;</button>
+                <input type="text" class="form-control text-center" value="${ci.qty}" readonly>
+                <button class="btn btn-outline-secondary" onclick="changeQty(${b.id}, 1)">&plus;</button>
+              </div>
+            </td>
+            <td class="fw-bold text-primary">&#8377;${sub.toFixed(2)}</td>
+            <td class="text-end pe-4"><button class="btn btn-sm btn-outline-danger" onclick="changeQty(${b.id}, -999)"><i class="bi bi-trash"></i></button></td>
+          </tr>`;
+      }).join("");
+
+      const tax = subtotal * 0.05;
+      const grand = subtotal + tax;
+
+      $("#cart-container").html(`
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+              <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                  <thead class="table-light"><tr><th class="ps-4">Book</th><th>Price</th><th class="text-center">Qty</th><th>Subtotal</th><th class="text-end pe-4">Remove</th></tr></thead>
+                  <tbody>${rowsHtml}</tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+              <h5 class="fw-bold mb-3">Order Summary</h5>
+              <div class="d-flex justify-content-between mb-2 text-secondary"><span>Subtotal</span><span>&#8377;${subtotal.toFixed(2)}</span></div>
+              <div class="d-flex justify-content-between mb-2 text-secondary"><span>GST (5%)</span><span>&#8377;${tax.toFixed(2)}</span></div>
+              <hr>
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="fw-bold fs-5">Grand Total</span>
+                <span class="fw-bold fs-4 text-primary">&#8377;${grand.toFixed(2)}</span>
+              </div>
+              <button class="btn btn-primary w-100 py-2 fw-semibold" onclick="showPage('checkout')">Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i></button>
+            </div>
+          </div>
+        </div>`);
+    }
+
+    function renderCheckout() {
+      $("#ship-name").val(userProfile.fullName);
+      $("#ship-phone").val(userProfile.phone);
+      $("#ship-address").val(userProfile.address);
+      $("#ship-city").val(userProfile.city);
+      $("#ship-pin").val(userProfile.pin);
+
+      let subtotal = 0;
+      const itemsHtml = cart.map(ci => {
+        const b = BOOKS.find(x => x.id === ci.bookId);
+        const sub = b.price * ci.qty;
+        subtotal += sub;
+        return `<div class="d-flex justify-content-between py-2 border-bottom small"><span>${b.title} (&times;${ci.qty})</span><strong>&#8377;${sub.toFixed(2)}</strong></div>`;
+      }).join("");
+      const tax = subtotal * 0.05;
+      const grand = subtotal + tax;
+
+      $("#checkout-summary-box").html(`
+        <h5 class="fw-bold mb-3">Order Review</h5>
+        <div class="mb-3">${itemsHtml}</div>
+        <div class="d-flex justify-content-between small text-secondary mb-1"><span>Subtotal</span><span>&#8377;${subtotal.toFixed(2)}</span></div>
+        <div class="d-flex justify-content-between small text-secondary mb-2"><span>GST (5%)</span><span>&#8377;${tax.toFixed(2)}</span></div>
+        <hr>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <span class="fw-bold fs-5">Total Payable</span>
+          <span class="fw-bold fs-4 text-primary">&#8377;${grand.toFixed(2)}</span>
+        </div>
+        <button type="submit" class="btn btn-success w-100 py-2 fw-bold"><i class="bi bi-check2-circle me-1"></i>Complete Order &amp; Pay &#8377;${grand.toFixed(2)}</button>
+      `);
+    }
+
+    $("#checkout-form").on("submit", function(e) {
+      e.preventDefault();
+      let subtotal = 0;
+      const orderItems = cart.map(ci => {
+        const b = BOOKS.find(x => x.id === ci.bookId);
+        subtotal += b.price * ci.qty;
+        return { title: b.title, author: b.author, price: b.price, qty: ci.qty };
+      });
+      const grand = subtotal * 1.05;
+      const ordNum = "ORD-2026-" + Math.floor(10000 + Math.random() * 89999);
+      const payRef = "PAY-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      orders.unshift({
+        orderNumber: ordNum,
+        date: "Just now",
+        status: "Confirmed & Paid",
+        paymentMethod: $("#pay-method").val(),
+        paymentRef: payRef,
+        total: grand,
+        items: orderItems
+      });
+      cart = [];
+      updateNavBadge();
+      showToast(`Order ${ordNum} confirmed!`);
+      showPage("orders");
+    });
+
+    function renderOrders() {
+      const html = orders.map(o => `
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div><span class="badge bg-primary-subtle text-primary fw-bold me-2">${o.orderNumber}</span><span class="text-secondary small">Placed on ${o.date}</span></div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2"><i class="bi bi-patch-check-fill me-1"></i>${o.status}</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-2">
+              <thead class="text-secondary small"><tr><th>Book Title</th><th>Author</th><th>Price</th><th>Qty</th><th class="text-end">Subtotal</th></tr></thead>
+              <tbody>
+                ${o.items.map(i => `<tr><td class="fw-semibold">${i.title}</td><td class="text-secondary small">${i.author}</td><td>&#8377;${i.price.toFixed(2)}</td><td>${i.qty}</td><td class="text-end fw-semibold">&#8377;${(i.price * i.qty).toFixed(2)}</td></tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex flex-wrap justify-content-between align-items-center pt-2 text-secondary small">
+            <div><strong>Payment:</strong> ${o.paymentMethod} (<code>${o.paymentRef}</code>)</div>
+            <div class="fs-5 fw-bold text-primary">Total Paid: &#8377;${o.total.toFixed(2)}</div>
+          </div>
+        </div>
+      `).join("");
+      $("#orders-list").html(html);
+    }
+
+    function renderProfile() {
+      $("#prof-avatar").text(userProfile.fullName[0].toUpperCase());
+      $("#prof-disp-name").text(userProfile.fullName);
+      $("#prof-disp-email").text(userProfile.email);
+      $("#prof-disp-bio").text(userProfile.bio);
+      $("#prof-name").val(userProfile.fullName);
+      $("#prof-email").val(userProfile.email);
+      $("#prof-phone").val(userProfile.phone);
+      $("#prof-city").val(userProfile.city);
+      $("#prof-address").val(userProfile.address);
+      $("#prof-bio").val(userProfile.bio);
+    }
+
+    $("#profile-form").on("submit", function(e) {
+      e.preventDefault();
+      userProfile.fullName = $("#prof-name").val();
+      userProfile.email = $("#prof-email").val();
+      userProfile.phone = $("#prof-phone").val();
+      userProfile.city = $("#prof-city").val();
+      userProfile.address = $("#prof-address").val();
+      userProfile.bio = $("#prof-bio").val();
+      renderProfile();
+      showToast("Profile updated successfully!");
+    });
+
+    // Live jQuery Search Bar
+    $("#live-search").on("input", function() {
+      const q = $(this).val().trim();
+      searchFilter = q;
+      renderCatalog();
+      const $drop = $("#search-suggestions");
+      if (!q) { $drop.hide().empty(); return; }
+      const matches = BOOKS.filter(b => b.title.toLowerCase().includes(q.toLowerCase()) || b.author.toLowerCase().includes(q.toLowerCase()));
+      $drop.empty();
+      if (!matches.length) {
+        $drop.append(`<div class="p-3 text-secondary small text-center">No books matching "${q}"</div>`);
+      } else {
+        matches.forEach(b => {
+          $drop.append(`
+            <a href="#" class="d-flex justify-content-between align-items-center p-2 px-3 text-decoration-none text-dark border-bottom" onclick="addToCart(${b.id}); $('#search-suggestions').hide(); return false;">
+              <div class="text-truncate me-2"><div class="fw-semibold small text-truncate">${b.title}</div><div class="text-secondary" style="font-size:0.75rem;">${b.author}</div></div>
+              <span class="badge bg-primary-subtle text-primary">&#8377;${b.price} &plus; Cart</span>
+            </a>`);
+        });
+      }
+      $drop.show();
+    });
+
+    $(document).on("click", function(e) {
+      if (!$(e.target).closest("#live-search, #search-suggestions").length) $("#search-suggestions").hide();
+    });
+
+    updateNavBadge();
+    renderCatalog();
+  </script>
+</body>
+</html>
