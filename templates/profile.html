@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}User Profile Dashboard | BookVerse{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <!-- Left Profile Summary Card -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm rounded-4 p-4 text-center mb-4">
+      <div class="mx-auto mb-3 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-2" style="width: 80px; height: 80px;">
+        {{ user.full_name[0] | upper }}
+      </div>
+      <h5 class="fw-bold mb-0">{{ user.full_name }}</h5>
+      <div class="text-secondary small mb-2">@{{ user.username }} &bull; {{ user.email }}</div>
+      <p class="small text-muted mb-3">{{ user.bio }}</p>
+
+      <div class="row g-2 text-center border-top pt-3">
+        <div class="col-6">
+          <div class="fw-bold fs-5 text-primary">{{ order_stats.order_count }}</div>
+          <div class="text-secondary small">Total Orders</div>
+        </div>
+        <div class="col-6">
+          <div class="fw-bold fs-5 text-success">&#8377;{{ "%.0f"|format(order_stats.total_spent) }}</div>
+          <div class="text-secondary small">Total Spent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Edit Profile Form -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+      <h4 class="fw-bold mb-3"><i class="bi bi-person-gear text-primary me-2"></i>Manage Profile Information</h4>
+      <form action="{{ url_for('profile') }}" method="POST">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">Username (Read-Only)</label>
+            <input type="text" class="form-control bg-light" value="{{ user.username }}" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">Full Name</label>
+            <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">Email Address</label>
+            <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">Phone Number</label>
+            <input type="text" name="phone" class="form-control" value="{{ user.phone }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-secondary">Default Shipping Address</label>
+            <input type="text" name="address" class="form-control" value="{{ user.address }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">City</label>
+            <input type="text" name="city" class="form-control" value="{{ user.city }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">PIN / Postal Code</label>
+            <input type="text" name="postal_code" class="form-control" value="{{ user.postal_code }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-secondary">Reader Bio</label>
+            <textarea name="bio" class="form-control" rows="2">{{ user.bio }}</textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-secondary">New Password (leave blank to keep current password)</label>
+            <input type="password" name="new_password" class="form-control" placeholder="••••••••">
+          </div>
+        </div>
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-save me-1"></i>Save Profile Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

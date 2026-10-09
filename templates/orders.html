@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Order History | BookVerse{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h3 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Your Order History</h3>
+  <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-sm">Browse More Books</a>
+</div>
+
+{% for order in orders %}
+  <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
+      <div>
+        <span class="badge bg-primary-subtle text-primary fw-bold me-2">{{ order.order_number }}</span>
+        <span class="text-secondary small">Placed on {{ order.created_at }}</span>
+      </div>
+      <div class="d-flex align-items-center gap-3 mt-2 mt-sm-0">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+          <i class="bi bi-patch-check-fill me-1"></i>{{ order.status }}
+        </span>
+        <a href="{{ url_for('order_detail', order_id=order.id) }}" class="btn btn-sm btn-outline-dark">
+          View Invoice Details
+        </a>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-2">
+        <thead class="text-secondary small">
+          <tr>
+            <th>Book Title</th>
+            <th>Author</th>
+            <th>Unit Price</th>
+            <th>Qty</th>
+            <th class="text-end">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items_by_order[order.id] %}
+            <tr>
+              <td class="fw-semibold">{{ item.book_title }}</td>
+              <td class="text-secondary small">{{ item.book_author }}</td>
+              <td>&#8377;{{ "%.2f"|format(item.unit_price) }}</td>
+              <td>{{ item.quantity }}</td>
+              <td class="text-end fw-semibold">&#8377;{{ "%.2f"|format(item.subtotal) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center pt-2 text-secondary small">
+      <div>
+        <strong>Payment Method:</strong> {{ order.payment_method }} ({{ order.payment_reference }}) &bull;
+        <strong>Ship To:</strong> {{ order.shipping_name }}, {{ order.shipping_city }}
+      </div>
+      <div class="fs-5 fw-bold text-primary mt-2 mt-sm-0">
+        Total Paid: &#8377;{{ "%.2f"|format(order.total_amount) }}
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+    <i class="bi bi-bag-x display-3 text-secondary"></i>
+    <h4 class="fw-bold mt-3">No Orders Placed Yet</h4>
+    <p class="text-secondary">Once you complete checkout, your orders and itemized receipts will appear here.</p>
+    <div>
+      <a href="{{ url_for('index') }}" class="btn btn-primary">Start Shopping</a>
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Login | BookVerse{% endblock %}
+{% block content %}
+<div class="row justify-content-center py-4">
+  <div class="col-md-6 col-lg-5">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+      <div class="text-center mb-4">
+        <i class="bi bi-book-half text-primary display-5"></i>
+        <h3 class="fw-bold mt-2">Sign In to BookVerse</h3>
+        <p class="text-secondary small">Access your cart, profile, and order history</p>
+      </div>
+
+      <form action="{{ url_for('login') }}" method="POST">
+        <div class="mb-3">
+          <label class="form-label small text-secondary">Username or Email</label>
+          <input type="text" name="identifier" class="form-control" placeholder="praveen" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label small text-secondary">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">Sign In</button>
+      </form>
+
+      <div class="p-3 rounded bg-light border small text-secondary mb-3">
+        <strong class="text-primary">Demo Credentials:</strong><br>
+        Username: <code>praveen</code> &bull; Password: <code>praveen123</code>
+      </div>
+
+      <div class="text-center small text-secondary">
+        New to BookVerse? <a href="{{ url_for('register') }}" class="text-primary fw-semibold text-decoration-none">Create Account</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Checkout & Payment | BookVerse{% endblock %}
+{% block content %}
+<h3 class="fw-bold mb-4"><i class="bi bi-credit-card-2-front text-primary me-2"></i>Checkout &amp; Payment</h3>
+
+<form action="{{ url_for('checkout') }}" method="POST">
+  <div class="row g-4">
+    <!-- Shipping & Payment Details -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-3">1. Shipping Address</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">Recipient Full Name</label>
+            <input type="text" name="shipping_name" class="form-control" value="{{ user.full_name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">Contact Phone Number</label>
+            <input type="text" name="shipping_phone" class="form-control" value="{{ user.phone }}" placeholder="+91 8317668826" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-secondary">Street Address / Campus</label>
+            <input type="text" name="shipping_address" class="form-control" value="{{ user.address }}" placeholder="House No, Street, Landmark" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">City</label>
+            <input type="text" name="shipping_city" class="form-control" value="{{ user.city }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-secondary">PIN / Postal Code</label>
+            <input type="text" name="shipping_postal_code" class="form-control" value="{{ user.postal_code }}" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="fw-bold mb-3">2. Dummy Payment Gateway</h5>
+        <div class="mb-3">
+          <label class="form-label small text-secondary">Select Payment Method</label>
+          <select name="payment_method" class="form-select">
+            <option value="Credit / Debit Card (Dummy Gateway)" selected>Credit / Debit Card (Dummy Gateway)</option>
+            <option value="UPI Instant Pay (GPay / PhonePe)">UPI Instant Pay (GPay / PhonePe)</option>
+            <option value="NetBanking">NetBanking</option>
+            <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+          </select>
+        </div>
+
+        <div class="p-3 rounded-3 bg-light border">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label small text-secondary">Card Number (Simulated)</label>
+              <input type="text" class="form-control" value="4532 •••• •••• 8891" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small text-secondary">Expiry Date</label>
+              <input type="text" class="form-control" value="08/29" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small text-secondary">CVV</label>
+              <input type="password" class="form-control" value="123" required>
+            </div>
+          </div>
+          <div class="text-secondary small mt-2">
+            <i class="bi bi-shield-lock-fill text-success me-1"></i>Sandbox payment mode enabled &mdash; no real charges are made.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Review Sidebar -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="fw-bold mb-3">Order Review ({{ cart.total_quantity }} items)</h5>
+        <div class="mb-3" style="max-height: 280px; overflow-y: auto;">
+          {% for item in cart['items'] %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <div class="me-2">
+                <div class="fw-semibold small">{{ item.title }}</div>
+                <div class="text-secondary" style="font-size: 0.75rem;">Qty: {{ item.quantity }} &times; &#8377;{{ "%.2f"|format(item.price) }}</div>
+              </div>
+              <span class="fw-bold small">&#8377;{{ "%.2f"|format(item.item_total) }}</span>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-between mb-1 text-secondary small">
+          <span>Subtotal</span>
+          <span>&#8377;{{ "%.2f"|format(cart.subtotal) }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 text-secondary small">
+          <span>GST (5%)</span>
+          <span>&#8377;{{ "%.2f"|format(cart.tax) }}</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <span class="fw-bold fs-5">Total Payable</span>
+          <span class="fw-bold fs-4 text-primary">&#8377;{{ "%.2f"|format(cart.grand_total) }}</span>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 py-2 fw-bold">
+          <i class="bi bi-check2-circle me-1"></i>Complete Order &amp; Pay &#8377;{{ "%.2f"|format(cart.grand_total) }}
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

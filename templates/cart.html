@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Your Shopping Cart | BookVerse{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h3 class="fw-bold mb-0"><i class="bi bi-cart3 text-primary me-2"></i>Shopping Cart</h3>
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Continue Shopping
+  </a>
+</div>
+
+{% if cart['items'] %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Book Details</th>
+                <th>Unit Price</th>
+                <th class="text-center">Quantity</th>
+                <th>Subtotal</th>
+                <th class="text-end pe-4">Remove</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in cart['items'] %}
+                <tr id="cart-row-{{ item.book_id }}">
+                  <td class="ps-4 py-3">
+                    <div class="fw-bold">{{ item.title }}</div>
+                    <div class="text-secondary small">{{ item.author }} &bull; <span class="text-primary">{{ item.category }}</span></div>
+                  </td>
+                  <td>&#8377;{{ "%.2f"|format(item.price) }}</td>
+                  <td class="text-center">
+                    <div class="input-group input-group-sm justify-content-center" style="width: 115px; margin: 0 auto;">
+                      <button class="btn btn-outline-secondary btn-qty-change" type="button" data-book-id="{{ item.book_id }}" data-delta="-1">&minus;</button>
+                      <input type="text" class="form-control text-center cart-qty-input" value="{{ item.quantity }}" readonly>
+                      <button class="btn btn-outline-secondary btn-qty-change" type="button" data-book-id="{{ item.book_id }}" data-delta="1">&plus;</button>
+                    </div>
+                  </td>
+                  <td class="fw-bold text-primary cart-item-subtotal">&#8377;{{ "%.2f"|format(item.item_total) }}</td>
+                  <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-outline-danger btn-remove-cart" data-book-id="{{ item.book_id }}">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="fw-bold mb-3">Order Summary</h5>
+        <div class="d-flex justify-content-between mb-2 text-secondary">
+          <span>Total Items (<span id="cart-total-qty">{{ cart.total_quantity }}</span>)</span>
+          <span id="cart-subtotal">&#8377;{{ "%.2f"|format(cart.subtotal) }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 text-secondary">
+          <span>Estimated GST (5%)</span>
+          <span id="cart-tax">&#8377;{{ "%.2f"|format(cart.tax) }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-3 text-success small">
+          <span>Shipping Fee</span>
+          <span>FREE</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <span class="fw-bold fs-5">Grand Total</span>
+          <span class="fw-bold fs-4 text-primary" id="cart-grand-total">&#8377;{{ "%.2f"|format(cart.grand_total) }}</span>
+        </div>
+        <a href="{{ url_for('checkout') }}" class="btn btn-primary w-100 py-2 fw-semibold">
+          Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+    <i class="bi bi-cart-x display-3 text-secondary"></i>
+    <h4 class="fw-bold mt-3">Your Cart is Empty</h4>
+    <p class="text-secondary">Browse our collection and add books to get started.</p>
+    <div>
+      <a href="{{ url_for('index') }}" class="btn btn-primary px-4">Explore Books</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

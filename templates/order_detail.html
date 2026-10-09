@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Order Confirmation {{ order.order_number }} | BookVerse{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-start border-bottom pb-4 mb-4">
+        <div>
+          <span class="badge bg-success mb-2 px-3 py-1">ORDER CONFIRMED</span>
+          <h3 class="fw-bold mb-1">Order #{{ order.order_number }}</h3>
+          <div class="text-secondary small">Placed on {{ order.created_at }} &bull; Payment Ref: <code>{{ order.payment_reference }}</code></div>
+        </div>
+        <div class="text-md-end mt-3 mt-md-0">
+          <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-printer me-1"></i>Print Receipt
+          </button>
+          <a href="{{ url_for('order_history') }}" class="btn btn-primary btn-sm ms-1">All Orders</a>
+        </div>
+      </div>
+
+      <div class="row g-4 mb-4 small">
+        <div class="col-md-6">
+          <h6 class="fw-bold text-uppercase text-secondary">Shipping Address</h6>
+          <div class="fw-semibold">{{ order.shipping_name }}</div>
+          <div>{{ order.shipping_address }}</div>
+          <div>{{ order.shipping_city }} &ndash; {{ order.shipping_postal_code }}</div>
+          <div>Phone: {{ order.shipping_phone }}</div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold text-uppercase text-secondary">Payment Details</h6>
+          <div><strong>Method:</strong> {{ order.payment_method }}</div>
+          <div><strong>Transaction ID:</strong> <code>{{ order.payment_reference }}</code></div>
+          <div><strong>Order Status:</strong> <span class="text-success fw-semibold">{{ order.status }}</span></div>
+        </div>
+      </div>
+
+      <div class="table-responsive mb-4">
+        <table class="table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Book Title</th>
+              <th>Author</th>
+              <th>Unit Price</th>
+              <th>Quantity</th>
+              <th class="text-end">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td class="fw-semibold">{{ item.book_title }}</td>
+                <td class="text-secondary">{{ item.book_author }}</td>
+                <td>&#8377;{{ "%.2f"|format(item.unit_price) }}</td>
+                <td>{{ item.quantity }}</td>
+                <td class="text-end fw-bold">&#8377;{{ "%.2f"|format(item.subtotal) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <div class="text-end">
+          <div class="text-secondary small">Total Paid (incl. 5% GST)</div>
+          <div class="fs-3 fw-bold text-primary">&#8377;{{ "%.2f"|format(order.total_amount) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
